@@ -6,9 +6,9 @@ import sys
 from datetime import datetime
 import traceback
 import click
-import coloredlogs
 from playvine.config import directories, filenames
 from playvine.commands.dl import dl
+from playvine.utils.console import install_handler, show_banner
 
 
 @click.command(context_settings=dict(
@@ -34,6 +34,8 @@ def main(debug):
     logging.Logger.exit = log_exit
 
     os.makedirs(directories.logs, exist_ok=True)
+    # File handler keeps the full timestamped format so disk logs remain
+    # easy to grep / diff across runs.
     logging.basicConfig(
         level=logging.DEBUG,
         format=LOG_FORMAT,
@@ -45,24 +47,23 @@ def main(debug):
         )]
     )
 
-    coloredlogs.install(
-        level=logging.DEBUG if debug else logging.INFO,
-        fmt=LOG_FORMAT,
-        datefmt=LOG_DATE_FORMAT,
-        style=LOG_STYLE,
-        handlers=[logging.StreamHandler()],
-    )
+    # Console handler swaps coloredlogs for the PlayVine rich-based look:
+    # glyph-prefixed lines, no timestamps, vine-green accent.
+    install_handler(level=logging.DEBUG if debug else logging.INFO)
+
+    # Startup banner — replaces the seven sequential log.info() path lines.
+    show_banner({
+        "Config":    filenames.user_root_config,
+        "Cookies":   directories.cookies,
+        "Devices":   directories.devices,
+        "Cache":     directories.cache,
+        "Logs":      directories.logs,
+        "Temp":      directories.temp,
+        "Downloads": directories.downloads,
+    })
 
     log = logging.getLogger("playvine")
     log.debug(sys.argv)
-    log.info("PlayVine - A tool for archiving content from streaming services")
-    log.info(f"[Config]     : {filenames.user_root_config}")
-    log.info(f"[Cookies]    : {directories.cookies}")
-    log.info(f"[Devices]    : {directories.devices}")
-    log.info(f"[Cache]      : {directories.cache}")
-    log.info(f"[Logs]       : {directories.logs}")
-    log.info(f"[Temp]       : {directories.temp}")
-    log.info(f"[Downloads]  : {directories.downloads}")
 
     from playvine.config import config as _cfg
 
