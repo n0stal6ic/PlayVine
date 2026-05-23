@@ -1,0 +1,65 @@
+decrypter: 'packager'
+tag: 'NOGRP'
+tag_sd: 'NOGRP'
+
+arguments:
+  alang: 'orig' # Specify audio languages (seperated by commas)
+  slang: 'all' # Specify subtitles languages (seperated by commas)
+
+aria2c:
+  file_allocation: 'prealloc'
+
+# Set each to the filename of your device file.
+cdm:
+  default: 'your_device_name'
+  # MyService1: 'your_pr_device_sl3000'
+  # MyService2: 'your_wv_device_l1'
+
+# Add login credentials for a service.
+credentials:
+  # MyService1: 'email:password'
+  # MyService2:
+  #   profile1: 'email:password'
+  #   profile2: 'other@email.com:password'
+
+directories:
+  temp: ''
+
+headers:
+  User-Agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
+  
+key_vaults:
+  - type: 'local'
+    name: 'Local'
+    path: './playvine/key_store.db'
+
+output_template:
+  movies: '{title}.{year}.{quality}.{source}.WEB-DL.{audio}.{video}-{tag}'
+  series: '{title}.{season_episode}.{episode_name}.{quality}.{source}.WEB-DL.{audio}.{video}-{tag}'
+  use_last_audio: false
+
+profiles:
+  default: 'default'
+  Service1: false
+ 
+# Default proxy service to use.
+default_proxy_service: ''
+
+proxies: {} 
+
+nordvpn:
+    username: ''
+    password: ''
+
+surfshark:
+    username: ''
+    password: ''
+
+# Retry failed HTTP requests automatically.
+network:
+  retry_count: 3 # Max attempts (0 = disabled)
+  retry_backoff: 0.5 # Seconds between retries (doubles each attempt)
+
+# Post-download subtitle conversion options.
+subtitles:
+  convert_to_srt: false

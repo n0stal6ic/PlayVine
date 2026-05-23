@@ -1,0 +1,80 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "PlayVine"
+version = "0.1.0"
+description = "A tool for archiving content from streaming services"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "appdirs>=1.4.4",
+    "beautifulsoup4>=4.8.2",
+    "click>=8.0.1",
+    "cffi>=1.16.0",
+    "coloredlogs>=15.0",
+    "construct==2.8.8",
+    "crccheck>=1.0",
+    "cryptography>=43.0.3",
+    "ecpy>=1.2.5",
+    "httpx>=0.23.0",
+    "isodate>=0.6.1",
+    "jsonpickle>=2.0.0",
+    "langcodes[data]>=3.1.0",
+    "lxml>=5.3.0",
+    "m3u8",
+    "marisa-trie>=1.1.0",
+    "pproxy>=2.7.7",
+    "protobuf3",
+    "pycountry>=24.6.1",
+    "pycaption>=2.1.1",
+    "pycryptodome>=3.21.0",
+    "pycryptodomex>=3.4.3",
+    "pymediainfo>=5.0.3",
+    "PyMySQL[rsa]>=1.0.2",
+    "pymp4>=1.4.0",
+    "pyplayready",
+    "pywidevine",
+    "pysubs2>=1.6.1",
+    "PyYAML>=6.0.1",
+    "requests[socks]==2.32.3",
+    "subby",
+    "tldextract>=3.1.0",
+    "toml>=0.10.2",
+    "tqdm>=4.67.0",
+    "Unidecode>=1.2.0",
+    "validators>=0.18.2",
+    "websocket-client>=1.1.0",
+    "xmltodict>=0.14.2",
+    "yt-dlp>=2024.11.11",
+    "ushlex>=0.99.1",
+]
+
+[project.scripts]
+pv = "playvine.playvine:main"
+playvine = "playvine.playvine:main"
+
+[tool.uv.sources]
+m3u8 = { path = "./scripts/m3u8", editable = true }
+protobuf3 = { path = "./scripts/protobuf3", editable = true }
+pyplayready = { path = "./scripts/pyplayready", editable = true }
+pywidevine = { path = "./scripts/pywidevine", editable = true }
+subby = { path = "./scripts/subby", editable = true }
+
+[dependency-groups]
+dev = [
+    "flake8>=3.8.4",
+    "isort>=5.9.2",
+    "ruff>=0.8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["playvine"]
+
+[tool.isort]
+line_length = 120
+classes = ["CTV", "FPS", "IO", "iTunes", "MP4", "TVNOW"]
+extend_skip = ["playvine/vendor"]
+
+[tool.ruff]
+line-length = 120
