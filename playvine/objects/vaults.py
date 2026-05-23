@@ -56,7 +56,7 @@ class Vault:
             raise ValueError(f"Invalid vault type [{self.type.name}]")
 
         if self.type in (Vault.Types.HTTP, Vault.Types.HTTPAPI):
-            # HTTP vaults are stateless — no SQL ticket, always grant full access
+            # HTTP vaults are stateless - no SQL ticket, always grant full access
             self.ticket = None
             self.perms = [tuple([["*"], ("*", "*")])]
         else:
@@ -286,7 +286,7 @@ class Vaults:
         return InsertResult.SUCCESS
 
     def commit(self, vault):
-        # HTTP/HTTPAPI vaults are stateless — nothing to commit
+        # HTTP/HTTPAPI vaults are stateless - nothing to commit
         if vault.type in (Vault.Types.HTTP, Vault.Types.HTTPAPI):
             return
         self.adb.commit(vault.ticket)

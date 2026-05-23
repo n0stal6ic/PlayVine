@@ -10,7 +10,7 @@ terminal aesthetic:
   * No per-line timestamp on stdout. The file logger keeps the full
     timestamped format so grep-ability isn't lost.
 
-The file logger is untouched — only the console (stdout) channel changes.
+The file logger is untouched - only the console (stdout) channel changes.
 """
 from __future__ import annotations
 
@@ -68,7 +68,7 @@ class PlayVineLogHandler(logging.Handler):
         ⚠  No CDM configured
         ✕  Could not parse license
 
-    No timestamp, no logger name, no level word — the glyph carries all
+    No timestamp, no logger name, no level word - the glyph carries all
     of that. Detail still lives in the file log if you need it.
     """
 
@@ -92,7 +92,7 @@ def install_handler(level: int = logging.INFO) -> PlayVineLogHandler:
 
     Removes any existing StreamHandler (such as one previously installed
     by coloredlogs) so the new style is the only console output. The
-    FileHandler — if one was set up by ``logging.basicConfig`` — is left
+    FileHandler - if one was set up by ``logging.basicConfig`` - is left
     alone so disk logs keep their full timestamped format.
     """
     root = logging.getLogger()
@@ -100,7 +100,7 @@ def install_handler(level: int = logging.INFO) -> PlayVineLogHandler:
         if isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler):
             root.removeHandler(h)
     handler = PlayVineLogHandler(level=level)
-    # Bare format — the handler adds the glyph itself, and we don't
+    # Bare format - the handler adds the glyph itself, and we don't
     # want timestamps/logger names duplicated in the message body.
     handler.setFormatter(logging.Formatter("%(message)s"))
     root.addHandler(handler)

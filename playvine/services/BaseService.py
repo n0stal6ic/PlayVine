@@ -13,7 +13,7 @@ class BaseService:
       3. Add a @staticmethod cli() Click command that returns an instance of your class
       4. Implement get_titles(), get_tracks(), and license()
 
-    The services directory is scanned automatically at startup — no registration needed.
+    The services directory is scanned automatically at startup - no registration needed.
     """
 
     # CLI names / shortcuts recognised for this service (case-insensitive).
@@ -51,11 +51,11 @@ class BaseService:
         Initialise from a Click context (ctx) produced by the service's cli() command.
 
         ctx.obj is a ContextData with:
-          .config      — service-specific YAML config dict
-          .cdm         — pywidevine Cdm or pyplayready Cdm instance
-          .cookies     — MozillaCookieJar or None
-          .credentials — Credential or None
-          .profile     — profile name string or None
+          .config      - service-specific YAML config dict
+          .cdm         - pywidevine Cdm or pyplayready Cdm instance
+          .cookies     - MozillaCookieJar or None
+          .credentials - Credential or None
+          .profile     - profile name string or None
         """
         obj = ctx.obj if ctx.obj else None
 

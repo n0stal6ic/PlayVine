@@ -33,11 +33,11 @@ class BaseCDM(ABC):
             track:   A playvine Track instance with PSSH data populated.
             service: The active service instance, used for the license
                      exchange and (for Widevine) the service certificate.
-            title:   The Title context for the request — passed through
+            title:   The Title context for the request - passed through
                      to service callbacks so per-title logic can apply.
 
         Returns:
-            A list of (kid_hex, key_hex) tuples — one entry per content
+            A list of (kid_hex, key_hex) tuples - one entry per content
             key. `kid_hex` is a lowercase hex string with dashes stripped.
 
         Raises:

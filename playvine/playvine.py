@@ -51,7 +51,7 @@ def main(debug):
     # glyph-prefixed lines, no timestamps, vine-green accent.
     install_handler(level=logging.DEBUG if debug else logging.INFO)
 
-    # Startup banner — replaces the seven sequential log.info() path lines.
+    # Startup banner - replaces the seven sequential log.info() path lines.
     show_banner({
         "Config":    filenames.user_root_config,
         "Cookies":   directories.cookies,

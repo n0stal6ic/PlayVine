@@ -1,5 +1,5 @@
 """
-dl.py — PlayVine unified download command.
+dl.py - PlayVine unified download command.
 
   - Proper CDM type detection via isinstance() instead of dir() heuristics
   - Key retrieval, decryption, and mux phases extracted into helper functions
@@ -235,7 +235,7 @@ def _get_content_keys(ctx, service, title, track, no_cache: bool, cache: bool):
     if cache:
         return None, None
 
-    # CDM — polymorphic dispatch via factory. The right subclass
+    # CDM - polymorphic dispatch via factory. The right subclass
     # (WidevineCDM / PlayReadyCDM / ...) is picked from the underlying
     # vendor CDM type; each subclass validates its own PSSH precondition.
     cdm = wrap_cdm(ctx.obj.cdm)
@@ -734,7 +734,7 @@ def result(
                     None,
                 )
                 if _existing:
-                    log.info(f" + Skipping — already exists: {_existing}")
+                    log.info(f" + Skipping - already exists: {_existing}")
                     continue
 
         # Per-Track Download/Decrypt

@@ -32,7 +32,7 @@ from playvine.utils.subprocess import ffprobe
 # NOTE: do not uncomment. widevine_pb2.py is generated against the vendored
 # protobuf3 lib but the runtime google.protobuf (4.x) is incompatible with it,
 # so importing this module at startup crashes the entire CLI. The symbol is
-# only referenced in docstrings / commented-out code today — nothing actually
+# only referenced in docstrings / commented-out code today - nothing actually
 # instantiates it. If a future code path genuinely needs WidevineCencHeader,
 # regenerate the .proto first against the active protobuf runtime.
 # from playvine.utils.widevine.protos.widevine_pb2 import WidevineCencHeader
@@ -1186,8 +1186,8 @@ class Tracks:
 		then ensure the iterable is sorted in ascending order (first = best, last = worst).
 
 		Special language tokens:
-		  "orig" — select the original-language track(s)
-		  "all"  — select every available track (one per distinct language if one_per_lang)
+		  "orig" - select the original-language track(s)
+		  "all"  - select every available track (one per distinct language if one_per_lang)
 		"""
 		# Capture intent without mutating the caller's list.
 		want_orig = "orig" in languages
@@ -1211,7 +1211,7 @@ class Tracks:
 			]
 			if not tracks:
 				if want_orig and not nonoriglangs:
-					# Only "orig" was requested — fall back when only one language exists.
+					# Only "orig" was requested - fall back when only one language exists.
 					all_languages = set(x.language for x in orig_tracks)
 					if len(all_languages) == 1:
 						tracks = list(orig_tracks)

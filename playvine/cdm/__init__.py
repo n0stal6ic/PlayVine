@@ -5,7 +5,7 @@ Public API:
     - BaseCDM:         abstract interface every DRM wrapper implements
     - WidevineCDM:     pywidevine wrapper
     - PlayReadyCDM:    pyplayready wrapper
-    - wrap_cdm(raw):   factory — returns the right BaseCDM subclass for
+    - wrap_cdm(raw):   factory - returns the right BaseCDM subclass for
                        the given vendor CDM instance
 """
 from playvine.cdm.base import BaseCDM
@@ -15,7 +15,7 @@ from playvine.cdm.playready import PlayReadyCDM
 
 def wrap_cdm(raw_cdm) -> BaseCDM:
     """
-    Wrap a raw vendor CDM (pywidevine.Cdm / pyplayready.Cdm — including
+    Wrap a raw vendor CDM (pywidevine.Cdm / pyplayready.Cdm - including
     their RemoteCdm variants) in the matching BaseCDM subclass.
 
     Detection is by source module, matching the pattern already used by
