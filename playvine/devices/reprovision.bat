@@ -1,9 +1,9 @@
 @echo off
 title Device Provisioning
 setlocal enabledelayedexpansion
-mode con cols=35 lines=10
 goto main
 :main
+mode con cols=35 lines=10
 cls
 echo PlayVine - Device Provisioning
 echo.
@@ -21,6 +21,7 @@ if /i "%choice%"=="Q" goto end
 if /i "%choice%"=="quit" goto end
 goto main
 :menuwv
+mode con cols=75 lines=10
 cls
 echo Widevine
 echo.
@@ -29,7 +30,7 @@ echo    [2] Migrate .wvd     (upgrade an old .wvd to the current format)
 echo    [B] Back
 echo.
 set "choice="
-set /p "choice=Choice: "
+set /p "choice=> "
 if /i "%choice%"=="1" goto wv_create
 if /i "%choice%"=="2" goto wv_migrate
 if /i "%choice%"=="B" goto main
@@ -105,6 +106,7 @@ echo.
 pause
 goto main
 :menupr
+mode con cols=75 lines=10
 cls
 echo PlayReady
 echo.
@@ -113,7 +115,7 @@ echo    [2] Create new .prd   (from group certificate + group key)
 echo    [B] Back
 echo.
 set "choice="
-set /p "choice=Choice: "
+set /p "choice=> "
 if /i "%choice%"=="1" goto pr_reprovision
 if /i "%choice%"=="2" goto pr_create
 if /i "%choice%"=="B" goto main
