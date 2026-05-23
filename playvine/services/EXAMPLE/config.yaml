@@ -1,0 +1,19 @@
+# Per-service config for the EXAMPLE template.
+# Reachable as `self.config` inside the service class at runtime.
+#
+# Add whatever keys your service code needs: endpoint URLs, API tokens
+# that are safe to ship (or none if everything comes from credentials),
+# regex maps, device specs, etc.
+#
+# If your service needs a private proxy or authentication, put credential
+# values in playvine/playvine.yml under `credentials.<TAG>` instead of
+# here, because this file is committed alongside the script.
+
+endpoints:
+  api: "https://example.com/api"
+  playback: "https://example.com/playback"
+
+# Optional: set per-service default flags. The download command reads
+# `needs_auth` to decide whether to fail fast when no cookies / credentials
+# were supplied.
+needs_auth: true

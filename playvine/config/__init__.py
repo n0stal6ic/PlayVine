@@ -23,7 +23,6 @@ class Directories:
         self.package_root = Path(__file__).resolve().parent.parent
         self.configuration = self.package_root / "config"
         self.user_configs = self.package_root
-        self.service_configs = self.user_configs / "Services"
         self.data = self.package_root
         self.downloads = Path(__file__).resolve().parents[2] / "Downloads"
         self.temp = Path(__file__).resolve().parents[2] / "Temp"
@@ -31,14 +30,13 @@ class Directories:
         self.cookies = self.data / "Cookies"
         self.logs = self.package_root / "Logs"
         self.devices = self.data / "devices"
+        self.services = self.package_root / "services"
 
 class Filenames:
     def __init__(self):
         self.log = os.path.join(directories.logs, "playvine_{time}.log")
         self.root_config = os.path.join(directories.configuration, "playvine.yml")
         self.user_root_config = os.path.join(directories.user_configs, "playvine.yml")
-        self.service_config = os.path.join(directories.configuration, "Services", "{service}.yml")
-        self.user_service_config = os.path.join(directories.service_configs, "{service}.yml")
         self.subtitles = os.path.join(directories.temp, "TextTrack_{id}_{language_code}.srt")
         self.chapters = os.path.join(directories.temp, "{filename}_chapters.txt")
 

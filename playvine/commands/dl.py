@@ -139,14 +139,20 @@ def get_cdm(service: str, profile: Optional[str] = None, cdm_name: Optional[str]
 
 
 def get_service_config(service: str) -> dict:
-    cfg = load_yaml(filenames.service_config.format(service=service.lower())) or {}
-    user_cfg = (
-        load_yaml(filenames.user_service_config.format(service=service.lower()))
-        or load_yaml(filenames.user_service_config.format(service=service))
-    )
-    if user_cfg:
-        merge_dict(cfg, user_cfg)
-    return cfg
+    """
+    Load the per-service config.yaml (or config.yml) from inside the
+    service's own folder under playvine/services/. Returns an empty
+    dict if the service has no config file or the service is unknown.
+    """
+    from playvine.services import get_service_folder
+    folder = get_service_folder(service)
+    if folder is None:
+        return {}
+    for name in ("config.yaml", "config.yml"):
+        cfg_path = folder / name
+        if cfg_path.is_file():
+            return load_yaml(str(cfg_path)) or {}
+    return {}
 
 
 def get_profile(service: str) -> Optional[str]:

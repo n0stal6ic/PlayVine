@@ -24,7 +24,7 @@ PlayVine is a command-line tool for downloading and decrypting content from stre
 - **DASH, HLS, and ISM** - Built-in manifest parsers for MPD, M3U8, and ISM formats
 - **Multi-key content** - Handles multi-key CENC out of the box
 - **Key vault** - Caches and reuses decryption keys across sessions via local or remote vaults
-- **Service plugins** - Drop a `.py` file into `playvine/services/` and it is ready to use,
+- **Service plugins** - Drop a service folder into `playvine/services/` and it is ready to use,
 - **Track selection** - Fine control over video quality, codecs, audio languages, subtitles, and dynamic range
 - **HDR and Dolby Vision** - Supports SDR, HDR10, HLG, DV, and DV+HDR hybrid downloads
 - **Fast downloads** - Numerous binary integration for multi-connection segment downloading
@@ -127,7 +127,7 @@ proxies:
   US: 'socks5://user:pass@host:port'
 ```
 
-Per-service proxies can also be set directly in the service YAML config. Place the file at `playvine/config/Services/ServiceName.yml`:
+Per-service proxies can also be set directly in the service YAML config. Place a `config.yaml` next to the service script inside its folder, for example `playvine/services/myservice/config.yaml`:
 
 ```yaml
 proxy: 'socks5://user:pass@host:port'
@@ -161,7 +161,21 @@ playvine/Cookies/
 
 ## Adding Services
 
-Add a `.py` file into `playvine/services/` and PlayVine picks it up on the next run with no imports or changes needed.
+Each service lives in its own folder under `playvine/services/`. The folder contains either an `__init__.py` (folder-package style) or a single `.py` file (standalone-script style), plus an optional `config.yaml` for per-service settings.
+
+The folder name is organisational only. Users invoke a service via any entry in its `ALIASES` list, so a folder named `whatever` can still be invoked as `pv dl NF ...` if the class inside declares `ALIASES = ["NF", "netflix"]`.
+
+Two equivalent layouts are supported:
+
+```
+playvine/services/AMZN/
+    __init__.py     # subclass of BaseService named AMZN
+    config.yaml
+
+playvine/services/hbomax/
+    hbomax.py       # subclass of BaseService named HBOMax
+    config.yaml
+```
 
 Your service subclasses `BaseService` and declares its aliases:
 
@@ -265,14 +279,14 @@ PlayVine/
 │   ├── commands/
 │   │   └── dl.py               - download command
 │   ├── config/
-│   │   ├── playvine.yml        - default config
-│   │   └── Services/           - per-service YAML configs
+│   │   └── playvine.yml        - default config
 │   ├── cookies/                - place netscape cookies here
 │   ├── devices/                - place .wvd and .prd files here
 │   ├── objects/                - Title, Track, and Vault data models
 │   ├── parsers/                - DASH/MPD, HLS/M3U8, and ISM parsers
-│   ├── services/               - add service .py files here
-│   │   └── BaseService.py      - base class all services extend
+│   ├── services/               - one folder per service (script + config.yaml)
+│   │   ├── BaseService.py      - base class all services extend
+│   │   └── EXAMPLE/            - copyable template for new services
 │   ├── utils/                  - shared utilities
 │   ├── vendor/                 - vendored third-party libraries
 │   └── playvine.py             - CLI entry point
