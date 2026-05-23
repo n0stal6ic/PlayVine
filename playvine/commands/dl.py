@@ -237,7 +237,7 @@ def _retrieve_widevine_keys(ctx, service, title, track) -> list:
         log.debug(f" + License response ({len(license_msg)} bytes): {license_msg[:120]!r}")
         # Some license servers wrap response in JSON or base64.
         # Try raw bytes first, then common wrapper formats.
-        candidates = list(_unwrap_license(license_msg))
+        candidates = _unwrap_license(license_msg)
         last_err = None
         parsed = False
         for attempt, candidate in enumerate(candidates, 1):
@@ -264,26 +264,27 @@ def _retrieve_widevine_keys(ctx, service, title, track) -> list:
         ctx.obj.cdm.close(session_id)
 
 
-def _unwrap_license(data: bytes):
+def _unwrap_license(data: bytes) -> list[bytes]:
     """
-    Yield candidate license bytes in order of likelihood:
+    Return candidate license bytes in order of likelihood:
       1. Raw bytes as-is (most common)
       2. JSON  {"license": "<base64>"}  (some proxies/services)
       3. Base64-encoded raw bytes       (rare)
     """
-    yield data
+    candidates: list[bytes] = [data]
     try:
         j = json.loads(data)
         for key in ("license", "licenseData", "license_message", "response"):
             if key in j:
-                yield base64.b64decode(j[key])
+                candidates.append(base64.b64decode(j[key]))
                 break
     except Exception:
         pass
     try:
-        yield base64.b64decode(data)
+        candidates.append(base64.b64decode(data))
     except Exception:
         pass
+    return candidates
 
 
 def _retrieve_playready_keys(ctx, service, title, track) -> list:
