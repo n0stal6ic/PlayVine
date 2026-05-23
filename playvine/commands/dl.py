@@ -9,9 +9,7 @@ dl.py — PlayVine unified download command.
   - ISM Atmos fixup and DV+HDR hybrid creation preserved
   - Cookie save on every licensing call
 """
-import base64
 import html
-import json
 import logging
 import os
 import shutil
@@ -30,6 +28,7 @@ from pymediainfo import MediaInfo
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from playvine import services
+from playvine.cdm import wrap_cdm
 from playvine.config import Config, config, credentials, directories, filenames
 from playvine.objects import AudioTrack, Credential, TextTrack, Title, Titles, VideoTrack
 from playvine.objects.tracks import Track
@@ -43,10 +42,8 @@ from playvine.utils.click import (
 from playvine.utils.collections import as_list, merge_dict
 from playvine.utils.io import load_yaml
 from pywidevine import Device as WVDevice, Cdm as WVCdm, RemoteCdm as WVRemoteCdm
-from pywidevine import PSSH as PSSHWV
 from pyplayready.cdm import Cdm as PRCdm
 from pyplayready import Device as PRDevice
-from pyplayready.system.pssh import PSSH as PRPSSH
 from pyplayready.crypto.ecc_key import ECCKey
 from pyplayready.system.bcert import Certificate
 from Crypto.Random import get_random_bytes
@@ -210,116 +207,12 @@ def get_credentials(service: str, profile: str = "default") -> Optional[Credenti
 
 
 
-def _retrieve_widevine_keys(ctx, service, title, track) -> list:
-    """Open a Widevine CDM session, license, and return [(kid_hex, key_hex), ...]."""
-    session_id = ctx.obj.cdm.open()
-    log.info(f" + CDM Session: {session_id.hex()}")
-    try:
-        ctx.obj.cdm.set_service_certificate(
-            session_id,
-            service.certificate(
-                challenge=ctx.obj.cdm.service_certificate_challenge,
-                title=title,
-                track=track,
-                session_id=session_id,
-            ) or ctx.obj.cdm.common_privacy_cert,
-        )
-        license_msg = service.license(
-            challenge=ctx.obj.cdm.get_license_challenge(
-                session_id=session_id,
-                pssh=PSSHWV(track.psshWV),
-            ),
-            title=title,
-            track=track,
-            session_id=session_id,
-        )
-        assert license_msg, "Empty license response"
-        log.debug(f" + License response ({len(license_msg)} bytes): {license_msg[:120]!r}")
-        # Some license servers wrap response in JSON or base64.
-        # Try raw bytes first, then common wrapper formats.
-        candidates = _unwrap_license(license_msg)
-        last_err = None
-        parsed = False
-        for attempt, candidate in enumerate(candidates, 1):
-            try:
-                ctx.obj.cdm.parse_license(session_id, candidate)
-                if attempt > 1:
-                    log.debug(f" + Parsed license on unwrap attempt #{attempt}")
-                parsed = True
-                break
-            except Exception as parse_err:
-                last_err = parse_err
-        if not parsed:
-            raise ValueError(
-                f"Could not parse license response. "
-                f"Raw ({len(license_msg)} B): {license_msg[:80]!r}"
-            ) from last_err
-        save_cookies(service.__class__.__name__, service, ctx.obj.profile)
-        return [
-            (str(k.kid).replace("-", ""), k.key.hex())
-            for k in ctx.obj.cdm.get_keys(session_id)
-            if k.type == "CONTENT"
-        ]
-    finally:
-        ctx.obj.cdm.close(session_id)
-
-
-def _unwrap_license(data: bytes) -> list[bytes]:
-    """
-    Return candidate license bytes in order of likelihood:
-      1. Raw bytes as-is (most common)
-      2. JSON  {"license": "<base64>"}  (some proxies/services)
-      3. Base64-encoded raw bytes       (rare)
-    """
-    candidates: list[bytes] = [data]
-    try:
-        j = json.loads(data)
-        for key in ("license", "licenseData", "license_message", "response"):
-            if key in j:
-                candidates.append(base64.b64decode(j[key]))
-                break
-    except Exception:
-        pass
-    try:
-        candidates.append(base64.b64decode(data))
-    except Exception:
-        pass
-    return candidates
-
-
-def _retrieve_playready_keys(ctx, service, title, track) -> list:
-    """Open a PR CDM session, license, and return [(kid_hex, key_hex), ...]."""
-    session_id = ctx.obj.cdm.open()
-    log.info(f" + CDM Session: {session_id.hex()}")
-    try:
-        challenge = ctx.obj.cdm.get_license_challenge(
-            session_id, PRPSSH(track.psshPR).wrm_headers[0]
-        )
-        license_msg = service.license(
-            challenge=challenge,
-            title=title,
-            track=track,
-            session_id=session_id,
-        )
-        assert license_msg, "Empty license response"
-        if isinstance(license_msg, bytes):
-            license_msg = license_msg.decode("utf-8")
-        ctx.obj.cdm.parse_license(session_id, license_msg)
-        save_cookies(service.__class__.__name__, service, ctx.obj.profile)
-        return [
-            (str(k.key_id).replace("-", ""), k.key.hex())
-            for k in ctx.obj.cdm.get_keys(session_id)
-        ]
-    finally:
-        ctx.obj.cdm.close(session_id)
-
-
 def _get_content_keys(ctx, service, title, track, no_cache: bool, cache: bool):
     """
     Full key resolution chain:
       1. Static key already on the track
       2. Key vault lookup
-      3. CDM license (WV or PR, auto-selected)
+      3. CDM license (DRM scheme auto-selected by the cdm factory)
 
     Returns (key_for_track, all_content_keys), or (None, None) to signal
     the caller should skip this title (only when cache=True and no key found).
@@ -342,14 +235,12 @@ def _get_content_keys(ctx, service, title, track, no_cache: bool, cache: bool):
     if cache:
         return None, None
 
-    # CDM (Detect WV vs PR via hasattr over module string methods)
-    is_wv = hasattr(ctx.obj.cdm, "common_privacy_cert")
-    if is_wv and track.psshWV:
-        content_keys = _retrieve_widevine_keys(ctx, service, title, track)
-    elif not is_wv and track.psshPR:
-        content_keys = _retrieve_playready_keys(ctx, service, title, track)
-    else:
-        raise RuntimeError("No matching PSSH for the active CDM type")
+    # CDM — polymorphic dispatch via factory. The right subclass
+    # (WidevineCDM / PlayReadyCDM / ...) is picked from the underlying
+    # vendor CDM type; each subclass validates its own PSSH precondition.
+    cdm = wrap_cdm(ctx.obj.cdm)
+    content_keys = cdm.get_keys(track, service, title)
+    save_cookies(service.__class__.__name__, service, ctx.obj.profile)
 
     if not content_keys:
         raise RuntimeError("CDM returned no content keys")
